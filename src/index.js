@@ -2,53 +2,47 @@
  * Import external modules
  */
 const chalk = require("chalk");
-const { MongoClient } = require("mongodb");
+const express = require("express");
 
-/**
- * Set up the database connection
- */
-const connectionURL = process.env.MONGO_CONN_URL;
-const client = new MongoClient(connectionURL);
-const dbName = "task-manager-app";
+require("./db/mongoose");
+const User = require("./models/user");
+const Task = require("./models/task");
 
-main = async () => {
-  try {
-    // Use connect method to connect to the server
-    await client.connect();
-    console.log(chalk.yellow("Connected successfully to server"));
+// Creating a WEB SERVER
+const app = express();
 
-    const db = client.db(dbName);
-    const collection = db.collection("users");
+// Setting middlewares
+app.use(express.json());
 
-    // CRUD Operations
-    const insertResult = await collection.insertOne({
-      name: "Amelia",
-      age: 14,
+// Creating routes
+app.post("/users", (req, res) => {
+  const user = new User(req.body);
+
+  user
+    .save()
+    .then(() => {
+      res.status(201).send(user);
+    })
+    .catch((error) => {
+      res.status(400).send(error);
     });
-    console.log("Inserted documents =>", insertResult);
+});
 
-    const filteredDocs = await collection.find({ age: 28 }).toArray();
-    console.log("Found documents filtered by { age: 28 } =>", filteredDocs);
+app.post("/tasks", (req, res) => {
+  const task = new Task(req.body);
 
-    const updateResult = await collection.updateOne(
-      { age: 27 },
-      { $inc: { age: 1 } }
-    );
-    console.log("Updated documents =>", updateResult);
+  task
+    .save()
+    .then(() => {
+      res.status(201).send(task);
+    })
+    .catch((error) => {
+      res.status(400).send(error);
+    });
+});
 
-    const deleteResult = await collection.deleteOne({ age: 14 });
-    console.log("Deleted documents =>", deleteResult);
+const port = process.env.PORT || 3000;
 
-    return chalk.green("Done.");
-  } catch (error) {
-    throw chalk.red(error);
-  }
-};
-
-main()
-  .then(console.log)
-  .catch(console.error)
-  .finally(() => {
-    client.close();
-    console.log(chalk.yellow("Connection closed."));
-  });
+app.listen(port, () => {
+  console.log(chalk.yellow(`Server is listening to PORT ${port}...`));
+});
