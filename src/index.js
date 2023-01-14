@@ -137,6 +137,35 @@ app.patch("/tasks/:id", async (req, res) => {
   }
 });
 
+/**
+ * Deletion Endpoints
+ */
+app.delete("/users/:id", async (req, res) => {
+  const _id = req.params.id;
+  try {
+    const user = await User.findByIdAndDelete(_id);
+    if (!user) {
+      return res.status(404).send();
+    }
+    res.status(200).send(user);
+  } catch (err) {
+    res.status(500).send(err);
+  }
+});
+
+app.delete("/tasks/:id", async (req, res) => {
+  const _id = req.params.id;
+  try {
+    const task = await Task.findByIdAndDelete(_id);
+    if (!task) {
+      return res.status(404).send();
+    }
+    res.status(200).send(task);
+  } catch (err) {
+    res.status(500).send(err);
+  }
+});
+
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
