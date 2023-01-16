@@ -55,12 +55,25 @@ const userSchema = new mongoose.Schema({
 //Available on instances of the model
 userSchema.methods.generateAuthToken = async function () {
   const user = this;
-  console.log(process.env.JWT_SECRET);
   const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET);
 
   user.tokens = user.tokens.concat({ token });
   await user.save();
   return token;
+};
+
+//Hide private data
+userSchema.methods.toJSON = function () {
+  const user = this;
+  const userObj = user.toObject();
+
+  //Delete properties which should not be exposed
+  delete userObj.password;
+  delete userObj.__v;
+  delete userObj.tokens;
+  delete userObj.avatar;
+
+  return userObj;
 };
 
 // Static Method to find user by their login specific credentials
