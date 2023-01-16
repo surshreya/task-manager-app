@@ -1,4 +1,5 @@
 const express = require("express");
+const auth = require("../middlewares/auth");
 require("../db/mongoose");
 
 const User = require("../models/user");
@@ -34,8 +35,38 @@ router.post("/users/login", async (req, res) => {
   }
 });
 
+// Logout the user from the API
+router.post("/users/logout", auth, async (req, res) => {
+  try {
+    req.user.tokens = req.user.tokens.filter((token) => {
+      return token.token !== req.token;
+    });
+    await req.user.save();
+
+    res.send();
+  } catch (err) {
+    res.status(500).send();
+  }
+});
+
+// Logout the user from all sessions from the API
+router.post("/users/logoutAll", auth, async (req, res) => {
+  try {
+    req.user.tokens = [];
+    await req.user.save();
+
+    res.send();
+  } catch (err) {
+    res.status(500).send();
+  }
+});
+
+router.get("/users/me", auth, (req, res) => {
+  res.status(200).send(req.user);
+});
+
 // Fetches all the users
-router.get("/users", async (_, res) => {
+router.get("/users", auth, async (_, res) => {
   try {
     const users = await User.find({});
     res.status(200).send(users);
