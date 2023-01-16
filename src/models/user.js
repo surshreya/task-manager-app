@@ -103,6 +103,13 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
+//Establish a Relationship between User/Task for the mongoose to associate
+userSchema.virtual("task", {
+  ref: "Task",
+  localField: "_id",
+  foreignField: "author",
+});
+
 // Create User Model
 const User = mongoose.model("User", userSchema);
 
