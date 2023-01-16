@@ -61,36 +61,13 @@ router.post("/users/logoutAll", auth, async (req, res) => {
   }
 });
 
+// Fetch user profile
 router.get("/users/me", auth, (req, res) => {
   res.status(200).send(req.user);
 });
 
-// Fetches all the users
-router.get("/users", auth, async (_, res) => {
-  try {
-    const users = await User.find({});
-    res.status(200).send(users);
-  } catch (err) {
-    res.status(500).send({ error: err.message });
-  }
-});
-
-// Fetches a particular the user
-router.get("/users/:id", async (req, res) => {
-  const _id = req.params.id;
-  try {
-    const user = await User.findById(_id);
-    if (!user) {
-      return res.status(404).send();
-    }
-    res.status(200).send(user);
-  } catch (err) {
-    res.status(500).send({ error: err.message });
-  }
-});
-
 // Updates a particular the user
-router.patch("/users/:id", async (req, res) => {
+router.patch("/users/me", auth, async (req, res) => {
   const body = req.body;
   const updates = Object.keys(body);
   const allowedUpdates = ["name", "age", "email", "password"];
@@ -103,29 +80,22 @@ router.patch("/users/:id", async (req, res) => {
   }
 
   try {
-    const id = req.params.id;
-    const user = await User.findById(id);
-
     updates.forEach((update) => {
-      user[update] = body[update];
+      req.user[update] = body[update];
     });
 
-    await user.save();
-    res.status(200).send(user);
+    await req.user.save();
+    res.status(200).send(req.user);
   } catch (err) {
     res.status(500).send({ error: err.message });
   }
 });
 
 // Deletes a particular the user
-router.delete("/users/:id", async (req, res) => {
-  const _id = req.params.id;
+router.delete("/users/me", auth, async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(_id);
-    if (!user) {
-      return res.status(404).send();
-    }
-    res.status(200).send(user);
+    await req.user.remove();
+    res.status(200).send(req.user);
   } catch (err) {
     res.status(500).send({ error: err.message });
   }
