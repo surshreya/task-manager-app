@@ -24,6 +24,9 @@ router.post("/tasks", auth, async (req, res) => {
 });
 
 // Fetches all the tasks created by a user
+// GET /tasks
+// GET /tasks?completed=true
+// GET /tasks?limit=10&skip=20, i.e. page 3
 router.get("/tasks", auth, async (req, res) => {
   try {
     const match = {
@@ -34,7 +37,10 @@ router.get("/tasks", auth, async (req, res) => {
       match.completed = req.query.completed;
     }
 
-    const tasks = await Task.find(match);
+    const tasks = await Task.find(match, null, {
+      limit: parseInt(req.query.limit),
+      skip: parseInt(req.query.skip),
+    });
     res.status(200).send(tasks);
   } catch (err) {
     res.status(500).send(err);
