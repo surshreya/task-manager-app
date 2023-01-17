@@ -1,3 +1,4 @@
+const { query } = require("express");
 const express = require("express");
 const auth = require("../middlewares/auth");
 require("../db/mongoose");
@@ -27,8 +28,11 @@ router.post("/tasks", auth, async (req, res) => {
 // GET /tasks
 // GET /tasks?completed=true
 // GET /tasks?limit=10&skip=20, i.e. page 3
+// GET /tasks?sortBy=createdAt:desc
+
 router.get("/tasks", auth, async (req, res) => {
   try {
+    const sort = {};
     const match = {
       author: req.user._id,
     };
@@ -37,9 +41,15 @@ router.get("/tasks", auth, async (req, res) => {
       match.completed = req.query.completed;
     }
 
+    if (req.query.sortBy) {
+      const sortFields = req.query.sortBy.split(":");
+      sort[sortFields[0]] = sortFields[1] === "desc" ? 1 : -1;
+    }
+
     const tasks = await Task.find(match, null, {
       limit: parseInt(req.query.limit),
       skip: parseInt(req.query.skip),
+      sort,
     });
     res.status(200).send(tasks);
   } catch (err) {
