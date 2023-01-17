@@ -26,7 +26,15 @@ router.post("/tasks", auth, async (req, res) => {
 // Fetches all the tasks created by a user
 router.get("/tasks", auth, async (req, res) => {
   try {
-    const tasks = await Task.find({ author: req.user._id });
+    const match = {
+      author: req.user._id,
+    };
+
+    if (req.query.completed) {
+      match.completed = req.query.completed;
+    }
+
+    const tasks = await Task.find(match);
     res.status(200).send(tasks);
   } catch (err) {
     res.status(500).send(err);
