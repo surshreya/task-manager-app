@@ -1,8 +1,7 @@
 const mongoose = require("mongoose");
 const chalk = require("chalk");
 
-const dbName = "task-manager-app";
-const connectionURL = `${process.env.MONGOOSE_CONN_URL}${dbName}`;
+const connectionURL = `${process.env.MONGOOSE_CONN_URL}${process.env.DB_NAME}`;
 
 mongoose.set("strictQuery", false);
 mongoose.connect(connectionURL, { autoIndex: true });

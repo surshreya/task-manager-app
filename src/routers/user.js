@@ -2,9 +2,8 @@ const express = require("express");
 const multer = require("multer");
 const sharp = require("sharp");
 const auth = require("../middlewares/auth");
-const { sendWelcomeMail, sendCancelMail } = require("../emails/mail");
+const { sendWelcomeMail, sendCancelMail } = require("../../email/mail");
 require("../db/mongoose");
-
 const User = require("../models/user");
 
 const upload = multer({
@@ -29,7 +28,7 @@ router.post("/users", async (req, res) => {
   try {
     await user.save();
     const token = await user.generateAuthToken();
-    res.status(200).send({ user, token });
+    res.status(201).send({ user, token });
     // sendWelcomeMail(user.name, user.email);
   } catch (err) {
     res.status(500).send({ error: err.message });
