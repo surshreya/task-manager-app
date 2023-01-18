@@ -6,7 +6,6 @@ require("../db/mongoose");
 const User = require("../models/user");
 
 const upload = multer({
-  dest: "avatar",
   limits: {
     fileSize: 1000000,
   },
@@ -35,9 +34,19 @@ router.post("/users", async (req, res) => {
 });
 
 // Add an avatar
-router.post("/users/me/avatar", upload.single("avatar"), (_, res) => {
-  res.status(200).send();
-});
+router.post(
+  "/users/me/avatar",
+  auth,
+  upload.single("avatar"),
+  async (req, res) => {
+    req.user.avatar = req.file.buffer;
+    await req.user.save();
+    res.status(200).send();
+  },
+  (error, _, res, next) => {
+    res.status(400).send({ error: error.message });
+  }
+);
 
 // Login to access the API
 router.post("/users/login", async (req, res) => {
@@ -117,6 +126,13 @@ router.delete("/users/me", auth, async (req, res) => {
   } catch (err) {
     res.status(500).send({ error: err.message });
   }
+});
+
+// Delete an avatar
+router.delete("/users/me/avatar", auth, async (req, res) => {
+  req.user.avatar = undefined;
+  await req.user.save();
+  res.status(200).send();
 });
 
 module.exports = router;
