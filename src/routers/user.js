@@ -1,9 +1,22 @@
 const express = require("express");
+const multer = require("multer");
 const auth = require("../middlewares/auth");
 require("../db/mongoose");
 
 const User = require("../models/user");
 
+const upload = multer({
+  dest: "avatar",
+  limits: {
+    fileSize: 1000000,
+  },
+  fileFilter(req, file, cb) {
+    if (!file.originalname.match(/\.(jpg|png|jpeg)$/)) {
+      return cb(new Error("Please upload an image file."));
+    }
+    cb(undefined, true);
+  },
+});
 /**
  * Setting up Router
  */
@@ -19,6 +32,11 @@ router.post("/users", async (req, res) => {
   } catch (err) {
     res.status(500).send({ error: err.message });
   }
+});
+
+// Add an avatar
+router.post("/users/me/avatar", upload.single("avatar"), (_, res) => {
+  res.status(200).send();
 });
 
 // Login to access the API
