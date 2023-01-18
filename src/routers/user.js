@@ -93,6 +93,16 @@ router.get("/users/me", auth, (req, res) => {
   res.status(200).send(req.user);
 });
 
+// Fetch user profile
+router.get("/users/me/avatar", auth, (req, res) => {
+  if (!req.user || !req.user.avatar) {
+    return res.status(400).send();
+  }
+
+  res.set("Content-Type", "image/jpg");
+  res.send(req.user.avatar);
+});
+
 // Updates a particular the user
 router.patch("/users/me", auth, async (req, res) => {
   const body = req.body;
