@@ -2,6 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const sharp = require("sharp");
 const auth = require("../middlewares/auth");
+const { sendWelcomeMail, sendCancelMail } = require("../emails/mail");
 require("../db/mongoose");
 
 const User = require("../models/user");
@@ -29,6 +30,7 @@ router.post("/users", async (req, res) => {
     await user.save();
     const token = await user.generateAuthToken();
     res.status(200).send({ user, token });
+    // sendWelcomeMail(user.name, user.email);
   } catch (err) {
     res.status(500).send({ error: err.message });
   }
@@ -138,6 +140,7 @@ router.delete("/users/me", auth, async (req, res) => {
   try {
     await req.user.remove();
     res.status(200).send(req.user);
+    // sendCancelMail(req.user.name, req.user.email);
   } catch (err) {
     res.status(500).send({ error: err.message });
   }
