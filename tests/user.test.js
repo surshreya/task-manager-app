@@ -74,6 +74,20 @@ test("Should get the user's profile", async () => {
 });
 
 /**
+ * TEST - Should upload user's profile image
+ */
+test("Should upload user's profile image", async () => {
+  await request(app)
+    .post("/users/me/avatar")
+    .set("Authorization", `Bearer ${userOne.tokens[0].token}`)
+    .attach("avatar", "tests/fixtures/profile-pic.jpg")
+    .expect(200);
+
+  const user = await User.findById(userOne);
+  expect(user.avatar).toEqual(expect.any(Buffer)); //compares properties on the object, toBe wont work on obj as it applies ===
+});
+
+/**
  * TEST - Should not get an authorized user's profile
  */
 test("Should not get an authorized user's profile", async () => {
@@ -113,6 +127,17 @@ test("Should update valid user fields", async () => {
 
   const user = await User.findById(userOneID);
   expect(user.name).toEqual("Jessica");
+});
+
+/**
+ * TEST - Should NOT let an authorized user update
+ */
+test("Should NOT let an authorized user update", async () => {
+  const response = await request(app)
+    .patch("/users/me")
+    .send({ location: "USA" });
+
+  expect(response.status).toBe(401);
 });
 
 /**
